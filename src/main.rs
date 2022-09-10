@@ -3,6 +3,8 @@ use std::io;
 
 use dirs::home_dir;
 
+const YEAR: &str = "year3";
+
 fn main() {
     let home = home_dir().unwrap();
     let mut term = String::new();
@@ -25,8 +27,9 @@ fn main() {
 
     for course in courses {
         fs::create_dir_all(format!(
-            "{}/uni/year3/{}/{}",
+            "{}/uni/{}/{}/{}",
             home.to_str().unwrap(),
+            YEAR,
             term_string.to_lowercase(),
             course.to_lowercase()
         ))
