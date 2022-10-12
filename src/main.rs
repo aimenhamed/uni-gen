@@ -1,5 +1,7 @@
 use std::fs;
 use std::io;
+use std::io::prelude::*;
+use regex::Regex;
 
 use dirs::home_dir;
 
@@ -25,15 +27,38 @@ fn main() {
 
     println!("Generating courses files for {}.", courses.join(" "));
 
+    let mut zsh_rc = fs::OpenOptions::new()
+        .append(true)
+        .open(format!("{}/.zshrc", home.to_str().unwrap()))
+        .unwrap();
+
+    if let Err(e) = writeln!(zsh_rc, "# {} {}", YEAR, term_string.to_lowercase()) {
+       eprintln!("Couldn't write to zshrc: {}", e);
+    }
+    
     for course in courses {
-        fs::create_dir_all(format!(
+        let course_path = format!(
             "{}/uni/{}/{}/{}",
             home.to_str().unwrap(),
             YEAR,
             term_string.to_lowercase(),
             course.to_lowercase()
-        ))
-        .expect("error");
+        );
+
+        fs::create_dir_all(&course_path)
+            .expect("error");
+
+        let re = Regex::new(r"[A-Za-z]").unwrap();
+        let course_number = re.replace_all(course, ""); 
+        let alias = format!(
+            "alias {}='cd {}'",
+            course_number,
+            course_path
+        );
+
+        if let Err(e) = writeln!(zsh_rc, "{}", alias) {
+           eprintln!("Couldn't write to zshrc: {}", e);
+        }
     }
 
     println!("Done!");
